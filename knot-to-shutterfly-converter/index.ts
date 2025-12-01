@@ -1,12 +1,14 @@
 import { readFile, writeFile } from "fs/promises";
 import { parse } from "csv-parse/sync";
-import path from "path";
 
-const inputFilePath = "../data/knot.com people list 11.30.25.csv";  
-// const outputFilePath = path.join(__dirname, "data", "shutterfly");
+////////////////////////////// inputs ////////////////////////////////////
+
+const inputFilePath = "../data/knot.com 7-04 PM.csv"; 
+const outputFilePath = "../output/shutterfly_export.csv"; 
+
+//////////////////////////////////////////////////////////////////////////
 
 const knotCsv = await readFile(inputFilePath, "utf-8");
-
 
 const parsed = parse(knotCsv);
 
@@ -40,9 +42,7 @@ const processed: Person[] = parsed.slice(1).map(row => ({
     email: row[4]!, // Email
 }));
 
-console.log(processed)
-
-console.log("Loaded knot.com XML data. Example: person", processed[4]);
+console.log("Loaded knot.com XML data. Example: person", processed[0]);
 
 // the input includes all people, but we just want to send one invitation per household
 // create a dictionary keyed by household name
@@ -58,7 +58,7 @@ for (const person of processed) {
     }
 }
 
-console.log(`Processed ${Object.keys(households).length} unique households. Example household:`, Object.values(households)[3]);
+console.log(`Processed ${Object.keys(households).length} unique households. Example household:`, Object.values(households)[0]);
 
 Object.values(households).forEach((household: Person) => {
     if (household.address_1 == null ||household.address_1 == "") {
@@ -67,8 +67,8 @@ Object.values(households).forEach((household: Person) => {
 })
 
 // write as json
-await writeFile("../output/shutterfly_export.json", JSON.stringify(households))
-console.log("Written shutterfly_export.json");
+// await writeFile("../output/shutterfly_export.json", JSON.stringify(households))
+// console.log("Written shutterfly_export.json");
 
 // write as csv
 const csvLines = [
@@ -80,9 +80,9 @@ Object.values(households).forEach((household: Person) => {
     csvLines.push(`"${household.first}","${household.last}","${household.household}","${household.address_1}","${household.address_2 || ""}","${household.city}","${household.state}","${household.zip}","${household.country || ""}","${household.email}"`);
 })
 
-await writeFile("../output/shutterfly_export.csv", csvLines.join("\n"));
+await writeFile(outputFilePath, csvLines.join("\n"));
 
-console.log("Written shutterfly_export.csv");
+console.log("Written output CSV to", outputFilePath);
 
 
 
